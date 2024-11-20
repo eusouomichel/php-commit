@@ -1,9 +1,14 @@
 #!/usr/bin/env php
 <?php
 
-$autoloadFile = __DIR__ . '/../../autoload.php';
-
 use PhpCommit\Application;
+
+foreach ([__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php'] as $autoloadFile) {
+    if (file_exists($autoloadFile)) {
+        require $autoloadFile;
+        break;
+    }
+}
 
 $app = new Application();
 $app->run();
