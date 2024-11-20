@@ -1,5 +1,5 @@
 {
-    "name": "michelmileski/php-commit",
+    "name": "eusouomichel/php-commit",
     "description": "Uma biblioteca para criar mensagens de commit personalizadas",
     "type": "library",
     "license": "MIT",
