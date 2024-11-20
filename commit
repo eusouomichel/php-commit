@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-use PhpCommit\Application;
+use Eusouomichel\PhpCommit\Application;
 
 foreach ([__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php'] as $autoloadFile) {
     if (file_exists($autoloadFile)) {
