@@ -1,10 +1,10 @@
 <?php
 
-namespace PhpCommit;
+namespace Eusouomichel\PhpCommit;
 
 use Symfony\Component\Console\Application as BaseApplication;
-use PhpCommit\CommitMessageCommand;
-use PhpCommit\InitCommand;
+use Eusouomichel\PhpCommit\CommitMessageCommand;
+use Eusouomichel\PhpCommit\InitCommand;
 
 class Application extends BaseApplication
 {
@@ -15,7 +15,6 @@ class Application extends BaseApplication
         // Registra os comandos
         $this->add(new InitCommand());
         $this->add(new CommitMessageCommand());
-        // $this->setDefaultCommand('commit', true);
     }
 
     public function getHelp(): string

@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpCommit;
+namespace Eusouomichel\PhpCommit;
 
 class CommitMessage
 {
