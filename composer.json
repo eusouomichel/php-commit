@@ -1,0 +1,24 @@
+{
+    "name": "michelmileski/php-commit",
+    "description": "Uma biblioteca para criar mensagens de commit personalizadas",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "PhpCommit\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Michel Miléski",
+            "email": "michel.mileski@gmail.com"
+        }
+    ],
+    "bin": [
+        "commit"
+    ],
+    "require": {
+        "php": ">=7.4",
+        "symfony/console": "^7.1"
+    }
+}

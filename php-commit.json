@@ -1,0 +1,7 @@
+{
+    "language": "pt_BR",
+    "auto_add_files": true,
+    "auto_push": true,
+    "pre_commit_commands": [],
+    "no_commit_strings": []
+}
