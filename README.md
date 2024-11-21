@@ -19,7 +19,7 @@ Once Composer is installed, you can add the library to your project by running:
 
 ```bash
 
-composer require --dev michelmileski/php-commit
+composer require --dev eusouomichel/php-commit
 
 ```
 
