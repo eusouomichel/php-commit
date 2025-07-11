@@ -33,5 +33,13 @@
     "adding_files": "Adding files",
     "pushing_branch": "Pushing branch to remote repository",
     "limit_exceeded": "The limit of {max} characters has been reached. Description cannot exceed this length.",
-    "prohibited_strings_detected": "Prohibited strings detected in the code. Please remove them before committing."
+    "prohibited_strings_detected": "Prohibited strings detected in the code. Please remove them before committing.",
+    "config_not_found": "Configuration file 'php-commit.json' not found.",
+    "run_init_first": "Please run 'php vendor/bin/commit init' first to create the configuration file.",
+    "command_failed": "Command failed",
+    "checking_prohibited_strings": "Checking for prohibited strings...",
+    "file": "File",
+    "line": "Line",
+    "string": "String",
+    "content": "Content"
 }

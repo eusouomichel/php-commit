@@ -33,5 +33,13 @@
     "adding_files": "Adicionando arquivos",
     "pushing_branch": "Enviando branch para o repositório remoto",
     "limit_exceeded": "O limite de {max} caracteres foi atingido. A descrição não pode ser maior.",
-    "prohibited_strings_detected": "Strings proibidas detectadas no código. Por favor, remova-as antes de continuar com o commit."
+    "prohibited_strings_detected": "Strings proibidas detectadas no código. Por favor, remova-as antes de continuar com o commit.",
+    "config_not_found": "Arquivo de configuração 'php-commit.json' não encontrado.",
+    "run_init_first": "Por favor, execute 'php vendor/bin/commit init' primeiro para criar o arquivo de configuração.",
+    "command_failed": "Comando falhou",
+    "checking_prohibited_strings": "Verificando strings proibidas...",
+    "file": "Arquivo",
+    "line": "Linha",
+    "string": "String",
+    "content": "Conteúdo"
 }

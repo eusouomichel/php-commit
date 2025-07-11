@@ -10,6 +10,9 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Eusouomichel\PhpCommit\Utils\GitHelper;
+use Eusouomichel\PhpCommit\Utils\FileValidator;
+use Eusouomichel\PhpCommit\Utils\StyleManager;
 
 class CommitMessageCommand extends Command
 {
@@ -31,8 +34,20 @@ class CommitMessageCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        // Setup beautiful styles
+        StyleManager::setupStyles($output);
+        
+        // Display header
+        StyleManager::displayHeader($output);
+        
         // Carregar configurações JSON
         $configPath = 'php-commit.json';
+        if (!file_exists($configPath)) {
+            $output->writeln(StyleManager::getErrorMessage($this->t('config_not_found')));
+            $output->writeln(StyleManager::getInfoMessage($this->t('run_init_first')));
+            return Command::FAILURE;
+        }
+        
         $config = json_decode(file_get_contents($configPath), true);
 
         // Carregar traduções
@@ -41,50 +56,45 @@ class CommitMessageCommand extends Command
 
         $helper = $this->getHelper('question');
 
-        $question = new OutputFormatterStyle('blue', 'default', ['bold']);
-        $output->getFormatter()->setStyle('question', $question);
-
-        $danger = new OutputFormatterStyle('red', 'default');
-        $output->getFormatter()->setStyle('danger', $danger);
-
-        $warning = new OutputFormatterStyle('yellow', 'default');
-        $output->getFormatter()->setStyle('warning', $warning);
-
-        // Verificar se há mudanças para commit
-        $statusOutput = trim(shell_exec('git status --porcelain') ?? '');
-
-        if (empty($statusOutput)) {
-            $output->writeln("<error>" . $this->t('no_changes') . "</error>");
+        // Verificar se há mudanças para commit usando GitHelper
+        if (!GitHelper::hasChanges()) {
+            $output->writeln(StyleManager::getErrorMessage($this->t('no_changes')));
             return Command::FAILURE;
         }
 
         $preCommitCommands = $config['pre_commit_commands'] ?? [];
 
-        // Executar comandos de pré-commit
+        // Executar comandos de pré-commit com melhor feedback
         if (!empty($preCommitCommands)) {
-            $output->writeln("<info>" . $this->t('running_pre_commit_commands') . "</info>");
+            $output->writeln(StyleManager::getInfoMessage($this->t('running_pre_commit_commands'), '⚡'));
             foreach ($preCommitCommands as $command) {
-                $output->writeln("<info>" . $this->t('running_command') . ": $command</info>");
-                $result = shell_exec($command);
+                $output->writeln(StyleManager::getInfoMessage($this->t('running_command') . ": $command", '🔧'));
+                $result = GitHelper::runCommand($command);
+                if (!$result['success']) {
+                    $output->writeln(StyleManager::getErrorMessage($this->t('command_failed') . ": $command"));
+                    $output->writeln("<danger>{$result['error']}</danger>");
+                    return Command::FAILURE;
+                }
             }
         }
 
         $noCommitStrings = $config['no_commit_strings'] ?? [];
 
-        // Ignorar a checagem se não há strings proibidas
+        // Verificar strings proibidas com melhor performance
         if (!empty($noCommitStrings)) {
-            $filesToCheck = $this->getFilesToCommit();
-            $filesToCheck = array_filter($filesToCheck, fn ($file) => $file !== $configPath);
-            $invalidFiles = $this->checkFilesForProhibitedStrings($filesToCheck, $noCommitStrings);
+            $output->writeln(StyleManager::getInfoMessage($this->t('checking_prohibited_strings'), '🔍'));
+            $filesToCheck = GitHelper::getFilesToCommit();
+            $filesToCheck = array_filter($filesToCheck, fn ($file) => $file !== $configPath && !FileValidator::shouldIgnoreFile($file));
+            $invalidFiles = FileValidator::checkFilesForProhibitedStrings($filesToCheck, $noCommitStrings);
 
             if (!empty($invalidFiles)) {
-                $output->writeln("\n<error>" . $this->t('prohibited_strings_detected') . "</error>");
+                $output->writeln(StyleManager::getErrorMessage($this->t('prohibited_strings_detected')));
                 foreach ($invalidFiles as $file => $issues) {
-                    $output->writeln("<danger>- {$this->t('file')}: {$file}</danger>");
+                    $output->writeln("<danger>📄 {$this->t('file')}: {$file}</danger>");
                     foreach ($issues as $issue) {
                         [$string, $line, $lineContent] = $issue;
-                        $output->writeln("<danger>  - {$this->t('line')}: {$line} - {$this->t('string')}: {$string}</danger>");
-                        $output->writeln("    <danger>{$this->t('content')}: $lineContent</danger>");
+                        $output->writeln("<danger>  🔍 {$this->t('line')}: {$line} - {$this->t('string')}: {$string}</danger>");
+                        $output->writeln("    <danger>💬 {$this->t('content')}: $lineContent</danger>");
                     }
                 }
                 return Command::FAILURE;
@@ -93,20 +103,19 @@ class CommitMessageCommand extends Command
 
         // Verificar se a opção --wip foi usada
         if ($input->getOption('wip')) {
-            $output->writeln("<info>" . $this->t('creating_wip_commit') . "</info>");
+            $output->writeln(StyleManager::getInfoMessage($this->t('creating_wip_commit'), '⏳'));
 
             if ($config['auto_add_files'] ?? false) {
-                $output->writeln("<info>" . $this->t('adding_files') . "</info>");
-                shell_exec('git add -A');
+                $output->writeln(StyleManager::getInfoMessage($this->t('adding_files'), '➕'));
+                GitHelper::addAllFiles();
             }
 
             $commitMessage = 'chore: Work In Progress (WIP)';
-            shell_exec("git commit -m \"$commitMessage\"");
+            GitHelper::commit($commitMessage);
 
             if ($config['auto_push'] ?? false) {
-                $branch = trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
-                $output->writeln("<info>" . $this->t('pushing_branch') . "</info>");
-                shell_exec("git push --set-upstream origin $branch");
+                $output->writeln(StyleManager::getInfoMessage($this->t('pushing_branch'), '🚀'));
+                GitHelper::pushBranch();
             }
 
             return Command::SUCCESS;
@@ -133,7 +142,7 @@ class CommitMessageCommand extends Command
             $choicesWithDescriptions[$count++] = "$key: $description";
         }
 
-        $output->writeln('<question>' . $this->t('choose_commit_type') . '</question>');
+        StyleManager::displayCommitTypes($output, $choices);
         $question = new ChoiceQuestion('', $choicesWithDescriptions);
 
         $question->setValidator(function ($answer) use ($choicesWithDescriptions) {
@@ -152,13 +161,13 @@ class CommitMessageCommand extends Command
 
         // Prompt contexto do commit
         $maxLength = 20;
-        $output->writeln("\n<question>" . $this->t('commit_context', ['max' => $maxLength]) . "</question>");
+        $output->writeln("\n" . StyleManager::getStepMessage(1, $this->t('commit_context', ['max' => $maxLength])));
         $question = new Question('');
         $context = $this->askWithCharacterCount($input, $output, $question, $maxLength);
 
         // Prompt resumo do commit
         $maxLength = 50;
-        $output->writeln("\n<question>" . $this->t('commit_summary', ['max' => $maxLength]) . "</question>");
+        $output->writeln("\n" . StyleManager::getStepMessage(2, $this->t('commit_summary', ['max' => $maxLength])));
         $question = new Question('');
         $question->setValidator(function ($answer) {
             if (empty($answer)) {
@@ -171,82 +180,37 @@ class CommitMessageCommand extends Command
 
         // Prompt descrição do commit
         $maxLength = 500;
-        $output->writeln("\n<question>" . $this->t('commit_description', ['max' => $maxLength]) . "</question>");
+        $output->writeln("\n" . StyleManager::getStepMessage(3, $this->t('commit_description', ['max' => $maxLength])));
         $question = new Question('');
         $description = $this->askMultipleLinesWithCharacterCount($input, $output, $question, $maxLength);
 
         // Prompt breakingChange
         $maxLength = 50;
-        $output->writeln("\n<question>" . $this->t('commit_breaking_change', ['max' => $maxLength]) . "</question>");
+        $output->writeln("\n" . StyleManager::getStepMessage(4, $this->t('commit_breaking_change', ['max' => $maxLength])));
         $question = new Question('');
         $breakingChange = $this->askWithCharacterCount($input, $output, $question, $maxLength);
 
         // Prompt reference
         $maxLength = 50;
-        $output->writeln("\n<question>" . $this->t('commit_referer', ['max' => $maxLength]) . "</question>");
+        $output->writeln("\n" . StyleManager::getStepMessage(5, $this->t('commit_referer', ['max' => $maxLength])));
         $question = new Question('');
         $reference = $this->askWithCharacterCount($input, $output, $question, $maxLength);
 
         if ($config['auto_add_files'] ?? false) {
-            $output->writeln("<info>" . $this->t('adding_files') . "</info>");
-            shell_exec('git add -A');
+            $output->writeln(StyleManager::getInfoMessage($this->t('adding_files'), '➕'));
+            GitHelper::addAllFiles();
         }
 
         // Gera a mensagem de commit
         $commitMessage = CommitMessage::generate($type, $context, $summary, $description, $breakingChange, $reference);
-        shell_exec("git commit -m \"$commitMessage\"");
+        GitHelper::commit($commitMessage);
 
         if ($config['auto_push'] ?? false) {
-            $branch = trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
-            $output->writeln("<info>" . $this->t('pushing_branch') . "</info>");
-
-            shell_exec("git push --set-upstream origin $branch");
+            $output->writeln(StyleManager::getInfoMessage($this->t('pushing_branch'), '🚀'));
+            GitHelper::pushBranch();
         }
 
         return Command::SUCCESS;
-    }
-
-    private function getFilesToCommit(): array
-    {
-        $statusOutput = shell_exec('git status --porcelain');
-        $files = [];
-
-        foreach (explode("\n", trim($statusOutput)) as $line) {
-            if (!empty($line)) {
-                $file = preg_replace('/^[A-Z?]+\s+/', '', $line);
-                if ($file) {
-                    $files[] = $file;
-                }
-            }
-        }
-
-        return $files;
-    }
-
-    private function checkFilesForProhibitedStrings(array $files, array $prohibitedStrings): array
-    {
-        $invalidFiles = [];
-
-        foreach ($files as $file) {
-            if (file_exists($file)) {
-                $fileContent = file($file);
-                $foundIssues = [];
-
-                foreach ($fileContent as $lineNumber => $lineContent) {
-                    foreach ($prohibitedStrings as $string) {
-                        if (strpos($lineContent, $string) !== false) {
-                            $foundIssues[] = [$string, $lineNumber + 1, trim($lineContent)];
-                        }
-                    }
-                }
-
-                if (!empty($foundIssues)) {
-                    $invalidFiles[$file] = $foundIssues;
-                }
-            }
-        }
-
-        return $invalidFiles;
     }
 
     private function askWithCharacterCount(InputInterface $input, OutputInterface $output, Question $question, int $maxLength)

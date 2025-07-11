@@ -1,9 +1,20 @@
-# **PHP Commit**
+# 🚀 **PHP Commit**
 
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D7.4-8892BF.svg)](https://php.net/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Packagist](https://img.shields.io/packagist/v/eusouomichel/php-commit.svg)](https://packagist.org/packages/eusouomichel/php-commit)
 
-**PHP Commit** is an Open Source library designed to simplify the creation of personalized Git commit messages. It uses interactive prompts to help standardize commit messages and supports automations such as automatically adding files and pushing after a commit.
+**PHP Commit** is a powerful, user-friendly Open Source library that revolutionizes how you create Git commit messages. With intuitive interactive prompts and intelligent automation, it ensures your commit history is always clean, consistent, and professional.
 
-This library is built on the specifications of [Conventional Commits](https://www.conventionalcommits.org), a widely adopted standard for writing clear, consistent, and meaningful commit messages. By adhering to this standard, PHP Commit helps improve the readability and traceability of your project’s history, making it easier to collaborate and maintain.
+✨ **Key Features:**
+- 🎯 **Interactive commit creation** with guided prompts
+- 🌍 **Multi-language support** (English, Portuguese, and more)
+- 🔄 **Smart automation** (auto-add files, auto-push)
+- 🛡️ **Pre-commit validation** with custom rules
+- 📋 **Conventional Commits compliant**
+- ⚡ **Fast and lightweight**
+
+Built following [Conventional Commits](https://www.conventionalcommits.org) specifications, PHP Commit transforms your development workflow by making commit messages meaningful, searchable, and automatically processable by tools.
 
 
 ##  Installation
@@ -75,39 +86,68 @@ Here is an example of a generated `php-commit.json` file:
 
 
 
-##  Usage
+## 🎯 Usage
 
+### 🚀 Quick Start
 
+1. **Initialize the configuration:**
+   ```bash
+   php vendor/bin/commit init
+   ```
 
-###  Creating Custom Commit Messages
+2. **Create your first commit:**
+   ```bash
+   php vendor/bin/commit message
+   ```
 
+3. **Quick WIP commit:**
+   ```bash
+   php vendor/bin/commit message --wip
+   ```
 
+### 📝 Creating Custom Commit Messages
 
-To create a custom commit message, use the following command:
+To create a custom commit message, use:
 
 ```bash
-
-php vendor/bin/commit init
-
+php vendor/bin/commit message
 ```
 
+This launches an **interactive session** with beautiful prompts:
 
+```
+🔥 Choose the commit type:
+  [1] feat: A new feature
+  [2] fix: Bug fix
+  [3] docs: Documentation changes
+  [4] style: Style changes (formatting, spacing, etc.)
+  [5] refactor: Code refactoring without behavior changes
+  ...
 
-This command will launch an interactive session where you can:
+📝 Enter commit context (optional, max. 20 characters):
+> auth
 
+✨ Enter commit summary (max. 50 characters):
+> add user authentication system
 
+📖 Describe the changes (optional, max. 500 characters):
+> Implemented JWT-based authentication with login and logout endpoints
 
-1.  Select the type of commit (e.g., `feat`, `fix`, `docs`);
+⚠️  Provide breaking change (optional):
+> 
 
-2.  Provide a context for the commit;
+🔗 Reference (optional):
+> #123
+```
 
-3.  Add a summary for the commit;
+**Generated commit message:**
+```
+feat(auth): add user authentication system
 
-4.  Optionally provide a detailed description;
+Implemented JWT-based authentication with login and logout endpoints
 
-5.  Indicate if there are breaking changes;
-
-6.  Add a reference (e.g., issue or ticket number).
+Refs: #123
+```
 
 
 
@@ -141,21 +181,74 @@ If prohibited strings are detected, the commit will be blocked, and detailed err
 
 
 
-###  Multi-Language Support
-
-
+### 🌍 Multi-Language Support
 
 The library supports multiple languages for interactive prompts. You can set the desired language by updating the `language` field in the `php-commit.json` file.
 
+**Available languages:**
+- 🇺🇸 `en` (English)
+- 🇧🇷 `pt_BR` (Portuguese)
+- 🚀 More languages coming soon!
 
+## ⚙️ Advanced Configuration
 
-Available languages include:
+### Pre-commit Commands
+Automate your workflow by adding pre-commit commands:
 
+```json
+{
+  "pre_commit_commands": [
+    "npm run lint",
+    "composer phpcs",
+    "php artisan test"
+  ]
+}
+```
 
+### Prohibited Strings
+Prevent sensitive data from being committed:
 
-*  `en` (English)
+```json
+{
+  "no_commit_strings": [
+    "TODO",
+    "FIXME",
+    "console.log",
+    "var_dump",
+    "dd("
+  ]
+}
+```
 
-*  `pt_BR` (Portuguese)
+## ❓ FAQ
+
+**Q: Can I use this with existing projects?**
+A: Yes! Just run `php vendor/bin/commit init` in your project root.
+
+**Q: What if I want to skip the interactive prompts?**
+A: Use `--wip` flag for quick commits: `php vendor/bin/commit message --wip`
+
+**Q: How do I add a new language?**
+A: Create a new JSON file in `src/lang/` following the existing structure.
+
+**Q: Can I customize commit types?**
+A: Currently, we use standard Conventional Commits types. Custom types are planned for future releases.
+
+**Q: Does this work with Git hooks?**
+A: Yes! You can integrate PHP Commit with your existing Git hooks workflow.
+
+## 🔧 Troubleshooting
+
+**Configuration file not found?**
+- Make sure you've run `php vendor/bin/commit init` first
+- Check that `php-commit.json` exists in your project root
+
+**Command not found?**
+- Ensure Composer's vendor/bin directory is in your PATH
+- Try using the full path: `./vendor/bin/commit`
+
+**Permission denied?**
+- Make sure the `commit` file is executable: `chmod +x vendor/bin/commit`
 
 
 
