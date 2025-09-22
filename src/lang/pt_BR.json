@@ -17,7 +17,7 @@
     "commit_summary": "Digite o resumo do commit (máx. {max} caracteres):",
     "commit_description": "Descreva as mudanças (opcional, máx. {max} caracteres, campo aceita múltiplas linhas):",
     "commit_breaking_change": "Informe o breaking change (opcional, máx. {max} caracteres):",
-    "commit_referer": "Referência (opcional, máx. {max} caracteres):"
+    "commit_referer": "Referência (opcional, máx. {max} caracteres):",
     "choice_feat": "Uma nova funcionalidade",
     "choice_fix": "Correção de bug",
     "choice_docs": "Mudanças na documentação",
