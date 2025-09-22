@@ -74,6 +74,8 @@ class CommitMessage
         if (!empty($breakingChange)) {
             $this->breakingChange = trim($breakingChange);
             $this->isBreaking = true;
+        } else {
+            $this->breakingChange = null;
         }
     }
 

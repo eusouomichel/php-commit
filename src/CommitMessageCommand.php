@@ -286,6 +286,6 @@ class CommitMessageCommand extends Command
             }
         }
 
-        rtrim(implode("\n", $description));
+        return rtrim(implode("\n", $description));
     }
 }
