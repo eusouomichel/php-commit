@@ -142,7 +142,8 @@ class CommitMessageCommand extends Command
             $choicesWithDescriptions[$count++] = "$key: $description";
         }
 
-        StyleManager::displayCommitTypes($output, $choices);
+        $output->writeln('<question>🎯 ' . $this->t('choose_commit_type') . '</question>');
+        $output->writeln('');
         $question = new ChoiceQuestion('', $choicesWithDescriptions);
 
         $question->setValidator(function ($answer) use ($choicesWithDescriptions) {
