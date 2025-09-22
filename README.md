@@ -88,7 +88,34 @@ Here is an example of a generated `php-commit.json` file:
 
 ## 🎯 Usage
 
-### 🚀 Quick Start
+### ⚡ Quick Commands (Recommended)
+
+For easier usage, add these scripts to your `composer.json`:
+
+```json
+{
+  "scripts": {
+    "commit": "@php vendor/bin/commit message",
+    "wip": "@php vendor/bin/commit message --wip",
+    "init-commit": "@php vendor/bin/commit init"
+  }
+}
+```
+
+Then use these simple commands:
+
+```bash
+# Interactive commit creation
+composer commit
+
+# Quick WIP commit  
+composer wip
+
+# Initialize configuration (first time)
+composer init-commit
+```
+
+### 🚀 Traditional Usage
 
 1. **Initialize the configuration:**
    ```bash
@@ -151,7 +178,27 @@ Refs: #123
 
 
 
-###  Creating Automatic WIP Commits
+### 🅰️ Alternative Command Methods
+
+#### Shell Aliases
+Add to your shell config (`~/.zshrc`, `~/.bashrc`, etc.):
+```bash
+alias commit-msg="php vendor/bin/commit message"
+alias commit-wip="php vendor/bin/commit message --wip"
+```
+
+#### Global Installation
+```bash
+# Install globally
+composer global require eusouomichel/php-commit
+
+# Use anywhere
+commit message
+commit message --wip
+commit init
+```
+
+### 👍 Creating Automatic WIP Commits
 
 
 

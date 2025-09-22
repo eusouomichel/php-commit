@@ -31,6 +31,22 @@
     },
     "scripts": {
         "test": "phpunit",
-        "test-coverage": "phpunit --coverage-html coverage"
+        "test-coverage": "phpunit --coverage-html coverage",
+        "php-commit": "@php vendor/bin/commit",
+        "commit": "@php vendor/bin/commit message",
+        "wip": "@php vendor/bin/commit message --wip",
+        "init-commit": "@php vendor/bin/commit init",
+        "post-install-cmd": [
+            "@php -r \"echo '\\n🎉 PHP Commit installed successfully!\\n';\"",
+            "@php -r \"echo '🚀 Quick commands available:\\n';\"",
+            "@php -r \"echo '  composer commit     - Interactive commit\\n';\"",
+            "@php -r \"echo '  composer wip        - Quick WIP commit\\n';\"",
+            "@php -r \"echo '  composer init-commit - Initialize config\\n';\"",
+            "@php -r \"echo '\\n📝 Add these to your composer.json for convenience!\\n';\""
+        ],
+        "post-update-cmd": [
+            "@php -r \"echo '\\n🔄 PHP Commit updated! Commands still available:\\n';\"",
+            "@php -r \"echo '  composer commit, composer wip, composer init-commit\\n';\""
+        ]
     }
 }
