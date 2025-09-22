@@ -1,0 +1,21 @@
+{
+  "language": "en",
+  "auto_add_files": true,
+  "auto_push": false,
+  "pre_commit_commands": [
+    "composer phpcs",
+    "npm run lint",
+    "php artisan test --coverage"
+  ],
+  "no_commit_strings": [
+    "TODO",
+    "FIXME",
+    "console.log",
+    "var_dump",
+    "dd(",
+    "debugger;",
+    "print_r",
+    "die(",
+    "exit("
+  ]
+}

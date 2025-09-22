@@ -8,6 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Eusouomichel\PhpCommit\Utils\StyleManager;
 
 class InitCommand extends Command
 {
@@ -26,16 +27,26 @@ class InitCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $helper = $this->getHelper('question');
+        // Setup beautiful styles
+        StyleManager::setupStyles($output);
+        
+        // Display beautiful init header
+        $output->writeln([
+            '',
+            '<question>╔════════════════════════════════════════════════════════════════════════════════════════╗</question>',
+            '<question>║                                ⚙️  PHP Commit Setup                                    ║</question>',
+            '<question>║                         Configure your commit workflow                              ║</question>',
+            '<question>╚════════════════════════════════════════════════════════════════════════════════════════╝</question>',
+            ''
+        ]);
 
-        $question = new OutputFormatterStyle('blue', 'default', ['bold']);
-        $output->getFormatter()->setStyle('question', $question);
+        $helper = $this->getHelper('question');
 
         // Carregar idiomas disponíveis
         $languages = $this->getAvailableLanguages();
 
         // Perguntar o idioma
-        $output->writeln("Select the language for the next questions:");
+        $output->writeln(StyleManager::getStepMessage(1, "Select the language for the next questions:"));
         $question = new ChoiceQuestion('', $languages, array_search($this->language, $languages));
         $this->language = $helper->ask($input, $output, $question);
 
@@ -43,34 +54,40 @@ class InitCommand extends Command
         $this->loadTranslations($this->language);
 
         // Perguntar configurações
-        $output->writeln("<info>" . $this->t('welcome_message') . "</info>");
+        $output->writeln(StyleManager::getSuccessMessage($this->t('welcome_message')));
 
-        $question = new Question($this->t('auto_add_files') . " [yes]: ", 'yes');
+        $output->writeln("\n" . StyleManager::getStepMessage(2, $this->t('auto_add_files')));
+        $question = new Question("[yes]: ", 'yes');
         $autoAdd = strtolower($helper->ask($input, $output, $question)) === 'yes';
 
-        $question = new Question($this->t('auto_push') . " [yes]: ", 'yes');
+        $output->writeln("\n" . StyleManager::getStepMessage(3, $this->t('auto_push')));
+        $question = new Question("[yes]: ", 'yes');
         $autoPush = strtolower($helper->ask($input, $output, $question)) === 'yes';
 
-        $output->writeln($this->t('pre_commit_commands'));
+        $output->writeln("\n" . StyleManager::getStepMessage(4, $this->t('pre_commit_commands')));
+        $output->writeln("<muted>  💡 Common examples: 'npm run lint', 'composer phpcs', 'php artisan test'</muted>");
         $preCommitCommands = [];
         while (true) {
-            $question = new Question('');
+            $question = new Question('  🔧 ');
             $command = $helper->ask($input, $output, $question);
             if (empty($command)) {
                 break;
             }
             $preCommitCommands[] = $command;
+            $output->writeln("<success>  ✅ Added: $command</success>");
         }
 
-        $output->writeln($this->t('no_commit_strings'));
+        $output->writeln("\n" . StyleManager::getStepMessage(5, $this->t('no_commit_strings')));
+        $output->writeln("<muted>  💡 Common examples: 'TODO', 'FIXME', 'console.log', 'var_dump'</muted>");
         $noCommitStrings = [];
         while (true) {
-            $question = new Question('');
+            $question = new Question('  🚫 ');
             $string = $helper->ask($input, $output, $question);
             if (empty($string)) {
                 break;
             }
             $noCommitStrings[] = $string;
+            $output->writeln("<warning>  ⚠️  Will block commits containing: $string</warning>");
         }
 
         $config = [
@@ -82,9 +99,10 @@ class InitCommand extends Command
         ];
 
         $filePath = getcwd() . '/php-commit.json';
-        file_put_contents($filePath, json_encode($config, JSON_PRETTY_PRINT));
+        file_put_contents($filePath, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
-        $output->writeln("<info>" . $this->t('config_saved', ['filePath' => $filePath]) . "</info>");
+        $output->writeln("\n" . StyleManager::getSuccessMessage($this->t('config_saved', ['filePath' => $filePath])));
+        $output->writeln("\n<info>🎉 You're all set! Run 'php vendor/bin/commit message' to create your first commit.</info>");
 
         return Command::SUCCESS;
     }
