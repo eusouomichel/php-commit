@@ -10,7 +10,7 @@ class Application extends BaseApplication
 {
     public function __construct()
     {
-        parent::__construct('PHP Commit', '1.0.0');
+        parent::__construct('PHP Commit', '1.0.1');
 
         // Registra os comandos
         $this->add(new InitCommand());
