@@ -102,7 +102,7 @@ class InitCommand extends Command
         file_put_contents($filePath, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
         $output->writeln("\n" . StyleManager::getSuccessMessage($this->t('config_saved', ['filePath' => $filePath])));
-        $output->writeln("\n<info>🎉 You're all set! Run 'php vendor/bin/commit message' to create your first commit.</info>");
+        $output->writeln("\n<info>🎉 " . $this->t('setup_complete') . "</info>");
 
         return Command::SUCCESS;
     }

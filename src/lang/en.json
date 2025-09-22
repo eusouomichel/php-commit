@@ -41,5 +41,6 @@
     "file": "File",
     "line": "Line",
     "string": "String",
-    "content": "Content"
+    "content": "Content",
+    "setup_complete": "You're all set! Run 'php vendor/bin/commit message' to create your first commit."
 }

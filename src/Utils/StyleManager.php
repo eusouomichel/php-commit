@@ -82,7 +82,7 @@ class StyleManager
      */
     public static function getStepMessage(int $step, string $message): string
     {
-        return "<highlight>[$step/6]</highlight> <question>$message</question>";
+        return "<highlight>[$step/5]</highlight> <question>$message</question>";
     }
 
     /**
