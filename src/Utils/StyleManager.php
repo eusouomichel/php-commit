@@ -32,8 +32,8 @@ class StyleManager
         $highlightStyle = new OutputFormatterStyle('cyan', 'default');
         $output->getFormatter()->setStyle('highlight', $highlightStyle);
 
-        // Muted style - gray
-        $mutedStyle = new OutputFormatterStyle('white', 'default', ['dim']);
+        // Muted style - gray (compatible with older Symfony versions)
+        $mutedStyle = new OutputFormatterStyle('default', 'default');
         $output->getFormatter()->setStyle('muted', $mutedStyle);
     }
 

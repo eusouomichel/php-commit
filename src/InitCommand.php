@@ -65,7 +65,7 @@ class InitCommand extends Command
         $autoPush = strtolower($helper->ask($input, $output, $question)) === 'yes';
 
         $output->writeln("\n" . StyleManager::getStepMessage(4, $this->t('pre_commit_commands')));
-        $output->writeln("<muted>  💡 Common examples: 'npm run lint', 'composer phpcs', 'php artisan test'</muted>");
+        $output->writeln("<info>  💡 Common examples: 'npm run lint', 'composer phpcs', 'php artisan test'</info>");
         $preCommitCommands = [];
         while (true) {
             $question = new Question('  🔧 ');
@@ -78,7 +78,7 @@ class InitCommand extends Command
         }
 
         $output->writeln("\n" . StyleManager::getStepMessage(5, $this->t('no_commit_strings')));
-        $output->writeln("<muted>  💡 Common examples: 'TODO', 'FIXME', 'console.log', 'var_dump'</muted>");
+        $output->writeln("<info>  💡 Common examples: 'TODO', 'FIXME', 'console.log', 'var_dump'</info>");
         $noCommitStrings = [];
         while (true) {
             $question = new Question('  🚫 ');
