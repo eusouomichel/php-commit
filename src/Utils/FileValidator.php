@@ -34,7 +34,7 @@ class FileValidator
         $invalidFiles = [];
         
         foreach ($files as $file) {
-            if (!file_exists($file)) {
+            if (!file_exists($file) || is_dir($file)) {
                 continue;
             }
             
@@ -54,8 +54,18 @@ class FileValidator
     {
         $issues = [];
         
+        // Skip directories and non-readable files
+        if (is_dir($file) || !is_readable($file)) {
+            return $issues;
+        }
+        
         // Use SplFileObject for better memory efficiency with large files
-        $fileObject = new \SplFileObject($file);
+        try {
+            $fileObject = new \SplFileObject($file);
+        } catch (\RuntimeException $e) {
+            // Skip files that can't be opened
+            return $issues;
+        }
         $lineNumber = 0;
         
         while (!$fileObject->eof()) {
@@ -81,14 +91,22 @@ class FileValidator
      */
     public static function shouldIgnoreFile(string $file): bool
     {
+        // Skip directories
+        if (is_dir($file)) {
+            return true;
+        }
+        
         $ignoredPatterns = [
             '/vendor/',
             '/node_modules/',
-            '.git/',
+            '/.git/',
             '.min.js',
             '.min.css',
             '.map',
-            '.lock'
+            '.lock',
+            '.log',
+            '.tmp',
+            '.cache'
         ];
         
         foreach ($ignoredPatterns as $pattern) {
