@@ -4,18 +4,46 @@ namespace Eusouomichel\PhpCommit\Utils;
 
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use RuntimeException;
 
 class GitHelper
 {
+    /**
+     * Check if current directory is a Git repository
+     */
+    public static function isGitRepository(): bool
+    {
+        $process = new Process(['git', 'rev-parse', '--git-dir']);
+        $process->run();
+        
+        return $process->isSuccessful();
+    }
+
     /**
      * Check if there are changes to commit
      */
     public static function hasChanges(): bool
     {
+        self::ensureGitRepository();
+        
         $process = new Process(['git', 'status', '--porcelain']);
         $process->run();
         
+        if (!$process->isSuccessful()) {
+            throw new RuntimeException('Failed to check Git status: ' . $process->getErrorOutput());
+        }
+        
         return !empty(trim($process->getOutput()));
+    }
+
+    /**
+     * Ensure we're in a Git repository
+     */
+    private static function ensureGitRepository(): void
+    {
+        if (!self::isGitRepository()) {
+            throw new RuntimeException('Not a Git repository. Please initialize Git first.');
+        }
     }
 
     /**

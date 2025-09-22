@@ -4,6 +4,7 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use Eusouomichel\PhpCommit\CommitMessage;
+use InvalidArgumentException;
 
 class CommitMessageTest extends TestCase
 {
@@ -51,5 +52,50 @@ class CommitMessageTest extends TestCase
         
         $this->assertStringContainsString('docs: update README', $message);
         $this->assertStringNotContainsString('():', $message);
+    }
+
+    public function testInvalidCommitType()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid commit type: invalid');
+        
+        CommitMessage::generate('invalid', 'scope', 'subject');
+    }
+
+    public function testEmptySubject()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Commit subject cannot be empty');
+        
+        CommitMessage::generate('feat', 'scope', '');
+    }
+
+    public function testSubjectTooLong()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Commit subject cannot exceed 50 characters');
+        
+        $longSubject = str_repeat('a', 51);
+        CommitMessage::generate('feat', 'scope', $longSubject);
+    }
+
+    public function testBackwardCompatibilityWithTypeString()
+    {
+        $message = CommitMessage::generate('feat: A new feature', 'auth', 'add login');
+        
+        $this->assertStringContainsString('feat(auth): add login', $message);
+    }
+
+    public function testCommitMessageObject()
+    {
+        $commit = new CommitMessage('feat', 'auth', 'add login', 'Added user authentication', 'API changed', '#123');
+        
+        $this->assertEquals('feat', $commit->getType());
+        $this->assertEquals('auth', $commit->getScope());
+        $this->assertEquals('add login', $commit->getSubject());
+        $this->assertEquals('Added user authentication', $commit->getBody());
+        $this->assertEquals('API changed', $commit->getBreakingChange());
+        $this->assertEquals('#123', $commit->getFooter());
+        $this->assertTrue($commit->isBreaking());
     }
 }
