@@ -15,7 +15,14 @@ class ConfigManager
         'auto_add_files' => false,
         'auto_push' => false,
         'pre_commit_commands' => [],
-        'no_commit_strings' => []
+        'no_commit_strings' => [],
+        'message_limits' => [
+            'context' => 20,
+            'summary' => 50,
+            'description' => 500,
+            'breaking_change' => 50,
+            'reference' => 50
+        ]
     ];
 
     public function __construct(?string $configPath = null)
@@ -63,6 +70,19 @@ class ConfigManager
                 throw new InvalidArgumentException("{$key} must be an array");
             }
         }
+
+        // Validate message limits
+        if (isset($this->config['message_limits']) && !is_array($this->config['message_limits'])) {
+            throw new InvalidArgumentException('message_limits must be an array');
+        }
+        
+        // Validate each limit is a positive integer
+        $limits = $this->config['message_limits'] ?? [];
+        foreach ($limits as $key => $value) {
+            if (!is_int($value) || $value <= 0) {
+                throw new InvalidArgumentException("message_limits.{$key} must be a positive integer");
+            }
+        }
     }
 
     public function get(string $key, $default = null)
@@ -93,6 +113,36 @@ class ConfigManager
     public function getProhibitedStrings(): array
     {
         return $this->config['no_commit_strings'];
+    }
+
+    public function getMessageLimits(): array
+    {
+        return $this->config['message_limits'] ?? $this->defaults['message_limits'];
+    }
+
+    public function getContextLimit(): int
+    {
+        return $this->getMessageLimits()['context'] ?? $this->defaults['message_limits']['context'];
+    }
+
+    public function getSummaryLimit(): int
+    {
+        return $this->getMessageLimits()['summary'] ?? $this->defaults['message_limits']['summary'];
+    }
+
+    public function getDescriptionLimit(): int
+    {
+        return $this->getMessageLimits()['description'] ?? $this->defaults['message_limits']['description'];
+    }
+
+    public function getBreakingChangeLimit(): int
+    {
+        return $this->getMessageLimits()['breaking_change'] ?? $this->defaults['message_limits']['breaking_change'];
+    }
+
+    public function getReferenceLimit(): int
+    {
+        return $this->getMessageLimits()['reference'] ?? $this->defaults['message_limits']['reference'];
     }
 
     public function toArray(): array

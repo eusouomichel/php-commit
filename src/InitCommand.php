@@ -90,12 +90,79 @@ class InitCommand extends Command
             $output->writeln("<warning>  ⚠️  Will block commits containing: $string</warning>");
         }
 
+        // Configurar limites de mensagens
+        $output->writeln("\n" . StyleManager::getStepMessage(6, $this->t('configure_message_limits')));
+        $output->writeln("<info>  💡 " . $this->t('message_limits_info') . "</info>");
+        
+        $messageLimits = [];
+        
+        // Context limit
+        $output->writeln("\n  📝 " . $this->t('context_limit_prompt'));
+        $question = new Question("  [20]: ", '20');
+        $question->setValidator(function ($answer) {
+            $value = (int) $answer;
+            if ($value <= 0) {
+                throw new \InvalidArgumentException($this->t('invalid_limit_value'));
+            }
+            return $value;
+        });
+        $messageLimits['context'] = (int) $helper->ask($input, $output, $question);
+        
+        // Summary limit
+        $output->writeln("\n  📝 " . $this->t('summary_limit_prompt'));
+        $question = new Question("  [50]: ", '50');
+        $question->setValidator(function ($answer) {
+            $value = (int) $answer;
+            if ($value <= 0) {
+                throw new \InvalidArgumentException($this->t('invalid_limit_value'));
+            }
+            return $value;
+        });
+        $messageLimits['summary'] = (int) $helper->ask($input, $output, $question);
+        
+        // Description limit
+        $output->writeln("\n  📝 " . $this->t('description_limit_prompt'));
+        $question = new Question("  [500]: ", '500');
+        $question->setValidator(function ($answer) {
+            $value = (int) $answer;
+            if ($value <= 0) {
+                throw new \InvalidArgumentException($this->t('invalid_limit_value'));
+            }
+            return $value;
+        });
+        $messageLimits['description'] = (int) $helper->ask($input, $output, $question);
+        
+        // Breaking change limit
+        $output->writeln("\n  📝 " . $this->t('breaking_change_limit_prompt'));
+        $question = new Question("  [50]: ", '50');
+        $question->setValidator(function ($answer) {
+            $value = (int) $answer;
+            if ($value <= 0) {
+                throw new \InvalidArgumentException($this->t('invalid_limit_value'));
+            }
+            return $value;
+        });
+        $messageLimits['breaking_change'] = (int) $helper->ask($input, $output, $question);
+        
+        // Reference limit
+        $output->writeln("\n  📝 " . $this->t('reference_limit_prompt'));
+        $question = new Question("  [50]: ", '50');
+        $question->setValidator(function ($answer) {
+            $value = (int) $answer;
+            if ($value <= 0) {
+                throw new \InvalidArgumentException($this->t('invalid_limit_value'));
+            }
+            return $value;
+        });
+        $messageLimits['reference'] = (int) $helper->ask($input, $output, $question);
+
         $config = [
             'language' => $this->language,
             'auto_add_files' => $autoAdd,
             'auto_push' => $autoPush,
             'pre_commit_commands' => $preCommitCommands,
             'no_commit_strings' => $noCommitStrings,
+            'message_limits' => $messageLimits,
         ];
 
         $filePath = getcwd() . '/php-commit.json';

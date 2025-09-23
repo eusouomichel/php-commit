@@ -1,0 +1,20 @@
+{
+    "language": "pt_BR",
+    "auto_add_files": true,
+    "auto_push": false,
+    "pre_commit_commands": [
+        "composer phpcs"
+    ],
+    "no_commit_strings": [
+        "TODO",
+        "var_dump",
+        "console.log"
+    ],
+    "message_limits": {
+        "context": 25,
+        "summary": 60,
+        "description": 400,
+        "breaking_change": 100,
+        "reference": 40
+    }
+}

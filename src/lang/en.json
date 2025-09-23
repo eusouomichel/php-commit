@@ -42,5 +42,13 @@
     "line": "Line",
     "string": "String",
     "content": "Content",
-    "setup_complete": "You're all set! Run 'php vendor/bin/commit message' to create your first commit."
+    "setup_complete": "You're all set! Run 'php vendor/bin/commit message' to create your first commit.",
+    "configure_message_limits": "Configure message length limits:",
+    "message_limits_info": "Set character limits for each commit message component",
+    "context_limit_prompt": "Maximum characters for context (scope):",
+    "summary_limit_prompt": "Maximum characters for summary:",
+    "description_limit_prompt": "Maximum characters for description:",
+    "breaking_change_limit_prompt": "Maximum characters for breaking change:",
+    "reference_limit_prompt": "Maximum characters for reference:",
+    "invalid_limit_value": "Limit value must be a positive integer"
 }

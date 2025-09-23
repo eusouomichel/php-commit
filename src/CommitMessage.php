@@ -21,17 +21,18 @@ class CommitMessage
         string $subject,
         ?string $body = null,
         ?string $breakingChange = null,
-        ?string $footer = null
+        ?string $footer = null,
+        int $summaryLimit = 50
     ) {
         $this->setType($type);
         $this->setScope($scope);
-        $this->setSubject($subject);
+        $this->setSubject($subject, $summaryLimit);
         $this->body = $body;
         $this->setBreakingChange($breakingChange);
         $this->footer = $footer;
     }
 
-    public static function generate($type, $context, $summary, $description = null, $breakingChange = null, $reference = null): string
+    public static function generate($type, $context, $summary, $description = null, $breakingChange = null, $reference = null, int $summaryLimit = 50): string
     {
         // Backward compatibility - extract type from string if needed
         if (strpos($type, ':') !== false) {
@@ -39,7 +40,7 @@ class CommitMessage
             $type = trim($parts[0]);
         }
 
-        $commitMessage = new self($type, $context, $summary, $description, $breakingChange, $reference);
+        $commitMessage = new self($type, $context, $summary, $description, $breakingChange, $reference, $summaryLimit);
         return $commitMessage->toString();
     }
 
@@ -57,14 +58,14 @@ class CommitMessage
         $this->scope = !empty($scope) ? trim($scope) : null;
     }
 
-    private function setSubject(string $subject): void
+    private function setSubject(string $subject, int $limit = 50): void
     {
         $subject = trim($subject);
         if (empty($subject)) {
             throw new InvalidArgumentException('Commit subject cannot be empty');
         }
-        if (strlen($subject) > 50) {
-            throw new InvalidArgumentException('Commit subject cannot exceed 50 characters');
+        if (strlen($subject) > $limit) {
+            throw new InvalidArgumentException("Commit subject cannot exceed {$limit} characters");
         }
         $this->subject = $subject;
     }

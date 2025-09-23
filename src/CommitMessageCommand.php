@@ -13,6 +13,7 @@ use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Eusouomichel\PhpCommit\Utils\GitHelper;
 use Eusouomichel\PhpCommit\Utils\FileValidator;
 use Eusouomichel\PhpCommit\Utils\StyleManager;
+use Eusouomichel\PhpCommit\Config\ConfigManager;
 
 class CommitMessageCommand extends Command
 {
@@ -40,18 +41,18 @@ class CommitMessageCommand extends Command
         // Display header
         StyleManager::displayHeader($output);
         
-        // Carregar configurações JSON
-        $configPath = 'php-commit.json';
-        if (!file_exists($configPath)) {
-            $output->writeln(StyleManager::getErrorMessage($this->t('config_not_found')));
-            $output->writeln(StyleManager::getInfoMessage($this->t('run_init_first')));
+        // Carregar configurações usando ConfigManager
+        try {
+            $configManager = new ConfigManager();
+        } catch (\RuntimeException $e) {
+            $output->writeln(StyleManager::getErrorMessage($e->getMessage()));
             return Command::FAILURE;
         }
         
-        $config = json_decode(file_get_contents($configPath), true);
+        $config = $configManager->toArray();
 
         // Carregar traduções
-        $language = $config['language'] ?? 'en';
+        $language = $configManager->getLanguage();
         $this->loadTranslations($language);
 
         $helper = $this->getHelper('question');
@@ -84,7 +85,7 @@ class CommitMessageCommand extends Command
         if (!empty($noCommitStrings)) {
             $output->writeln(StyleManager::getInfoMessage($this->t('checking_prohibited_strings'), '🔍'));
             $filesToCheck = GitHelper::getFilesToCommit();
-            $filesToCheck = array_filter($filesToCheck, fn ($file) => $file !== $configPath && !FileValidator::shouldIgnoreFile($file));
+            $filesToCheck = array_filter($filesToCheck, fn ($file) => $file !== 'php-commit.json' && !FileValidator::shouldIgnoreFile($file));
             $invalidFiles = FileValidator::checkFilesForProhibitedStrings($filesToCheck, $noCommitStrings);
 
             if (!empty($invalidFiles)) {
@@ -161,13 +162,13 @@ class CommitMessageCommand extends Command
         $type = $helper->ask($input, $output, $question);
 
         // Prompt contexto do commit
-        $maxLength = 20;
+        $maxLength = $configManager->getContextLimit();
         $output->writeln("\n" . StyleManager::getStepMessage(1, $this->t('commit_context', ['max' => $maxLength])));
         $question = new Question('');
         $context = $this->askWithCharacterCount($input, $output, $question, $maxLength);
 
         // Prompt resumo do commit
-        $maxLength = 50;
+        $maxLength = $configManager->getSummaryLimit();
         $output->writeln("\n" . StyleManager::getStepMessage(2, $this->t('commit_summary', ['max' => $maxLength])));
         $question = new Question('');
         $question->setValidator(function ($answer) {
@@ -180,19 +181,19 @@ class CommitMessageCommand extends Command
         $summary = $this->askWithCharacterCount($input, $output, $question, $maxLength);
 
         // Prompt descrição do commit
-        $maxLength = 500;
+        $maxLength = $configManager->getDescriptionLimit();
         $output->writeln("\n" . StyleManager::getStepMessage(3, $this->t('commit_description', ['max' => $maxLength])));
         $question = new Question('');
         $description = $this->askMultipleLinesWithCharacterCount($input, $output, $question, $maxLength);
 
         // Prompt breakingChange
-        $maxLength = 50;
+        $maxLength = $configManager->getBreakingChangeLimit();
         $output->writeln("\n" . StyleManager::getStepMessage(4, $this->t('commit_breaking_change', ['max' => $maxLength])));
         $question = new Question('');
         $breakingChange = $this->askWithCharacterCount($input, $output, $question, $maxLength);
 
         // Prompt reference
-        $maxLength = 50;
+        $maxLength = $configManager->getReferenceLimit();
         $output->writeln("\n" . StyleManager::getStepMessage(5, $this->t('commit_referer', ['max' => $maxLength])));
         $question = new Question('');
         $reference = $this->askWithCharacterCount($input, $output, $question, $maxLength);
@@ -203,7 +204,7 @@ class CommitMessageCommand extends Command
         }
 
         // Gera a mensagem de commit
-        $commitMessage = CommitMessage::generate($type, $context, $summary, $description, $breakingChange, $reference);
+        $commitMessage = CommitMessage::generate($type, $context, $summary, $description, $breakingChange, $reference, $configManager->getSummaryLimit());
         GitHelper::commit($commitMessage);
 
         if ($config['auto_push'] ?? false) {
